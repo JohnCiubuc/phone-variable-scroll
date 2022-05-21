@@ -14,3 +14,4 @@ https://user-images.githubusercontent.com/5205792/169665577-06d9f6ac-b31c-4d26-a
    * Have it assist with thread termination as well
 * Easier scroll velocity changes
 * Larger neutral zone with linspaces around it
+* Binary
