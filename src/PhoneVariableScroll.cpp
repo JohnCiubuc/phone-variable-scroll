@@ -49,6 +49,7 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
             qw "Screen size requested from ADB was wrong. Command requested: adb shell wm size";
 
         _screenSpaces = linspace(0,_screenSize.y(),SCREEN_DIVISIONS);
+        _wheelTickRates = linspace(WHEEL_TICK_RATE_MIN,WHEEL_TICK_RATE_MAX,SCREEN_DIVISIONS/2-1);
     });
     getScreenSize->start("adb", QStringList() << "shell" << "wm" << "size");
 
@@ -144,13 +145,15 @@ void PhoneVariableScroll::updateWheelIndex(int index)
     index = abs(index);
     if(wheelRepeat.repeatMasterCounter != index)
     {
+        if(index < wheelRepeat.repeatMasterCounter)
+            wheelRun();
         db index;
         wheelRepeat.repeatMasterCounter = index;
         wheelRepeat.repeat = index;
         if(index == 0) return;
-        wheelRun();
-        db "interval: " <<WHEEL_TICK_RATE*wheelRepeat.repeat;
-        _wheelTimer->setInterval(WHEEL_TICK_RATE*wheelRepeat.repeat);
+//        wheelRun();
+//        db "interval: " <<WHEEL_TICK_RATE*wheelRepeat.repeat;
+        _wheelTimer->setInterval(_wheelTickRates.at(index-1));
     }
 //    _wheelTimer->setInterval(1000);
 }

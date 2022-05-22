@@ -60,6 +60,7 @@ private:
     // This is... this isn't right is it?
     const int _screenDivisionsHalf = SCREEN_DIVISIONS / 2;
     QList<float> _screenSpaces;
+    QList<float> _wheelTickRates;
     int _fd;
 };
 #endif // PHONEVARIABLESCROLL_H
