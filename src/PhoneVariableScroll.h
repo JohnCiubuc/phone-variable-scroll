@@ -6,9 +6,6 @@
 #include <QTimer>
 #include <vector>
 
-#include "debug.h"
-#include "CONFIG.h"
-
 #include <linux/uinput.h>
 #include <cstring>
 #include <thread>
@@ -17,7 +14,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-
+#include "debug.h"
+#include "CONFIG.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui

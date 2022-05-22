@@ -48,6 +48,7 @@ void PhoneVariableScroll::readAdbShell()
             if (packet.at(2) == "0145")
             {
                 // If i don't assign this, my IDE says its an error
+                // when sticking it in the ternary
                 auto b = bool(packet.at(3).toInt());
 
                 // start/stop timer if finger is on/off screen
