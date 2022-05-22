@@ -14,8 +14,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#define DEBUG
+
 #include "debug.h"
 #include "CONFIG.h"
+
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui

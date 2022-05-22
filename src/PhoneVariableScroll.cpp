@@ -62,7 +62,7 @@ void PhoneVariableScroll::readAdbShell()
             {
                 int fingerY = packet.at(3).toInt(nullptr, 16);
                 int index = -1;
-//                db fingerY;
+                db fingerY;
 
                 // Get screen space index
                 for(int i = 0; i < _screenSpaces.size(); ++i)

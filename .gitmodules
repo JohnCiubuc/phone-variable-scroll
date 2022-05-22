@@ -1,0 +1,3 @@
+[submodule "JohnQtDebugUtils"]
+	path = JohnQtDebugUtils
+	url = git@github.com:JohnCiubuc/JohnQtDebugUtils.git

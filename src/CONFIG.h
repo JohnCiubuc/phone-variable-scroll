@@ -1,6 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+
 #define SCREEN_DIVISIONS 10
 // Wheel speed in ms
 #define WHEEL_TICK_RATE_MIN 20

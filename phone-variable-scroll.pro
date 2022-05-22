@@ -13,12 +13,14 @@ SOURCES += \
     src/PhoneVariableScroll.cpp
 
 HEADERS += \
+    JohnQtDebugUtils/debug.h \
     src/CONFIG.h \
-    src/PhoneVariableScroll.h \
-    src/debug.h
+    src/PhoneVariableScroll.h
 
 FORMS += \
     src/PhoneVariableScroll.ui
+
+INCLUDEPATH += JohnQtDebugUtils/
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
