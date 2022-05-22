@@ -33,8 +33,7 @@ class PhoneVariableScroll : public QMainWindow
 
     struct wheelRepeat_s
     {
-        int repeatMasterCounter;
-        int repeat;
+        int index;
         int direction;
     } wheelRepeat;
 
@@ -50,9 +49,11 @@ private slots:
 
     void emit_uinput(int fd, int type, int code, int val);
 private:
+    void createInput();
+    void createScreenSize();
     Ui::PhoneVariableScroll *ui;
     QTimer * _wheelTimer;
-    QProcess * _annoying;
+    QProcess * _adbProcessPipe;
     bool _bFingerActive = false;
     QPoint _screenSize;
 
@@ -62,5 +63,8 @@ private:
     QList<float> _screenSpaces;
     QList<float> _wheelTickRates;
     int _fd;
+
+
+    int _wheelTimerInterval;
 };
 #endif // PHONEVARIABLESCROLL_H
