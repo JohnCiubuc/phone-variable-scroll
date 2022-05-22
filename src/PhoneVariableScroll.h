@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "debug.h"
+#include "CONFIG.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -26,10 +27,12 @@ public:
 private slots:
 
     void readAdbShell();
+    void createScreenSpaces();
 private:
     Ui::PhoneVariableScroll *ui;
     QTimer * _wheelTimer;
     QProcess * _annoying;
     bool _bFingerActive = false;
+    QPoint _screenSize;
 };
 #endif // PHONEVARIABLESCROLL_H

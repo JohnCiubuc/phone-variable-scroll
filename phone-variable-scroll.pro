@@ -13,6 +13,7 @@ SOURCES += \
     src/PhoneVariableScroll.cpp
 
 HEADERS += \
+    src/CONFIG.h \
     src/PhoneVariableScroll.h \
     src/debug.h
 

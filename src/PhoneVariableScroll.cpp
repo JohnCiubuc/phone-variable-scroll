@@ -9,6 +9,23 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
     _annoying = new QProcess(this);
     connect(_annoying, &QProcess::readyRead, this, &PhoneVariableScroll::readAdbShell);
     _annoying->start("adb", QStringList() << "shell" << "getevent");
+
+
+    QProcess * getScreenSize = new QProcess();
+    connect(getScreenSize, &QProcess::readyRead, this, [=]()
+    {
+        auto line = getScreenSize->readAll().split(' ');
+        if (line.size() == 3)
+        {
+            auto diff = line.at(2).split('x');
+            _screenSize = QPoint(diff[0].toInt(), diff[1].toInt());
+        }
+        else
+            qw "Screen size requested from ADB was wrong. Command requested: adb shell wm size";
+
+        createScreenSpaces();
+    });
+    getScreenSize->start("adb", QStringList() << "shell" << "wm" << "size");
 }
 
 PhoneVariableScroll::~PhoneVariableScroll()
@@ -34,7 +51,7 @@ void PhoneVariableScroll::readAdbShell()
     //
     QList<QByteArray> events = output.split('\n');
 // "/dev/input/event4: 0000 0000 00000000"
-    for (auto event : events)
+    for (const auto &event : events)
     {
         QList<QByteArray> packet = event.split(' ');
         if (packet.size() == 4)
@@ -54,5 +71,10 @@ void PhoneVariableScroll::readAdbShell()
         }
 
     }
+}
+
+void PhoneVariableScroll::createScreenSpaces()
+{
+
 }
 
