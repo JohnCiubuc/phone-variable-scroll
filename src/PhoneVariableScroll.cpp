@@ -61,14 +61,20 @@ void PhoneVariableScroll::readAdbShell()
             {
                 int fingerY = packet.at(3).toInt(nullptr, 16);
                 int index = -1;
-                db fingerY;
+//                db fingerY;
                 // Neutral Zone
-                if (fingerY >= _neutralSize.x() && fingerY <= _neutralSize.y())
-                {
-                    db "Neutral";
-                    _wheelTimer->stop();
-                }
-                else _wheelTimer->stop();
+//                if (fingerY >= _neutralSize.x() && fingerY <= _neutralSize.y())
+//                {
+////                    db "Neutral";
+//                    _wheelTimer->stop();
+//                }
+//                else
+//                {
+////                    db "LEFT NEUTRAL";
+//                    _wheelTimer->start();
+//                }
+
+                // Get screen space index
                 for(int i = 0; i < _screenSpaces.size(); ++i)
                 {
                     if (fingerY <= _screenSpaces.at(i))
@@ -107,12 +113,26 @@ void PhoneVariableScroll::updateWheelIndex(int index)
     {
         if(index < wheelRepeat.index)
             wheelRun();
+
         db index;
+        // We were previous in neutral zone
+        // But now we are in scroll zone
+        bool bExitNeutral = (wheelRepeat.index == 0);
+
+        // Update index
         wheelRepeat.index = index;
-        // wheel neutral zone to fix this in the future
+
+        // wheel neutral zone
         if(index == 0)
+        {
+            db "neutral zone "<<_wheelTimerInterval;
+            _wheelTimer->stop();
             return;
+        }
         _wheelTimerInterval =_wheelTickRates.at(index-1);
+        db "winter"<<_wheelTimerInterval;
+        db bExitNeutral;
+        if(bExitNeutral) _wheelTimer->start();
     }
 }
 
