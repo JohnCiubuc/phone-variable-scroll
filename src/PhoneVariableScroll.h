@@ -8,7 +8,9 @@
 
 #include "debug.h"
 #include "CONFIG.h"
+#include <uInput.hpp>
 
+using namespace uInputPlus;
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -38,5 +40,6 @@ private:
     // This is... this isn't right is it?
     const int _screenDivisionsHalf = SCREEN_DIVISIONS / 2;
     QList<float> _screenSpaces;
+    uInput * _input;
 };
 #endif // PHONEVARIABLESCROLL_H

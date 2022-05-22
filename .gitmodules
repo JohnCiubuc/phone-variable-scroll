@@ -1,4 +1,3 @@
-[submodule "keepassx"]
-	path = keepassx
-	url = git@github.com:rockihack/keepassx.git
-  branch = wayland-autotype
+[submodule "libuInputPlus"]
+	path = libuInputPlus
+	url = git@github.com:YukiWorkshop/libuInputPlus.git

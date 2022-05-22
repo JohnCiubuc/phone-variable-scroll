@@ -6,6 +6,30 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
     , ui(new Ui::PhoneVariableScroll)
 {
     ui->setupUi(this);
+
+//    _input = new UInput();
+
+    uInputSetup mysetup(
+    {"呀"},
+    {EV_KEY, EV_ABS},
+    {BTN_LEFT, BTN_RIGHT, BTN_TOOL_FINGER, BTN_TOOL_QUINTTAP, BTN_TOUCH, BTN_TOOL_DOUBLETAP, BTN_TOOL_TRIPLETAP, BTN_TOOL_QUADTAP},
+    {},
+    {
+        {ABS_X, 6000, 40},
+        {ABS_Y, 6000, 40},
+        {ABS_PRESSURE, 255},
+        {ABS_TOOL_WIDTH, 15},
+        {ABS_MT_SLOT, 1},
+        {ABS_MT_POSITION_X, 6000, 40},
+        {ABS_MT_POSITION_Y, 6000, 40},
+        {ABS_MT_TRACKING_ID, 65535},
+        {ABS_MT_PRESSURE, 255}
+    },
+    {INPUT_PROP_POINTER}
+    );
+
+    _input = new uInput(mysetup);
+
     _annoying = new QProcess(this);
     connect(_annoying, &QProcess::readyRead, this, &PhoneVariableScroll::readAdbShell);
     _annoying->start("adb", QStringList() << "shell" << "getevent");
@@ -26,6 +50,16 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
         _screenSpaces = linspace(0,_screenSize.y(),SCREEN_DIVISIONS);
     });
     getScreenSize->start("adb", QStringList() << "shell" << "wm" << "size");
+
+    QTimer * temp = new QTimer;
+    connect(temp, &QTimer::timeout, this, [=]()
+    {
+        _input->emulate_touchpad_scroll(-100);
+    });
+    temp->start(500);
+
+
+//    sleep(10);
 }
 
 PhoneVariableScroll::~PhoneVariableScroll()

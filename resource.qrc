@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/definitions">
+        <file>src/emulation/definitions/keysyms_defines.h</file>
+        <file>src/emulation/definitions/dik_defines.h</file>
+    </qresource>
+</RCC>
