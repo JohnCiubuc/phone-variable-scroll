@@ -1,0 +1,4 @@
+[submodule "keepassx"]
+	path = keepassx
+	url = git@github.com:rockihack/keepassx.git
+  branch = wayland-autotype
