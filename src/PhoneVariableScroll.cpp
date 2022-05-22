@@ -9,26 +9,27 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
 
 //    _input = new UInput();
 
-    uInputSetup mysetup(
-    {"呀"},
-    {EV_KEY, EV_ABS},
-    {BTN_LEFT, BTN_RIGHT, BTN_TOOL_FINGER, BTN_TOOL_QUINTTAP, BTN_TOUCH, BTN_TOOL_DOUBLETAP, BTN_TOOL_TRIPLETAP, BTN_TOOL_QUADTAP},
-    {},
-    {
-        {ABS_X, 6000, 40},
-        {ABS_Y, 6000, 40},
-        {ABS_PRESSURE, 255},
-        {ABS_TOOL_WIDTH, 15},
-        {ABS_MT_SLOT, 1},
-        {ABS_MT_POSITION_X, 6000, 40},
-        {ABS_MT_POSITION_Y, 6000, 40},
-        {ABS_MT_TRACKING_ID, 65535},
-        {ABS_MT_PRESSURE, 255}
-    },
-    {INPUT_PROP_POINTER}
-    );
+    struct uinput_setup usetup;
 
-    _input = new uInput(mysetup);
+    _fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
+
+    /* enable mouse button left and relative events */
+    ioctl(_fd, UI_SET_EVBIT, EV_KEY);
+    ioctl(_fd, UI_SET_KEYBIT, BTN_LEFT);
+
+    ioctl(_fd, UI_SET_EVBIT, EV_REL);
+    ioctl(_fd, UI_SET_RELBIT, REL_X);
+    ioctl(_fd, UI_SET_RELBIT, REL_WHEEL);
+    ioctl(_fd, UI_SET_RELBIT, REL_Y);
+
+    memset(&usetup, 0, sizeof(usetup));
+    usetup.id.bustype = BUS_USB;
+    usetup.id.vendor = 0x1234; /* sample vendor */
+    usetup.id.product = 0x5678; /* sample product */
+    strcpy(usetup.name, "Example device");
+
+    ioctl(_fd, UI_DEV_SETUP, &usetup);
+    ioctl(_fd, UI_DEV_CREATE);
 
     _annoying = new QProcess(this);
     connect(_annoying, &QProcess::readyRead, this, &PhoneVariableScroll::readAdbShell);
@@ -67,6 +68,8 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
 
 PhoneVariableScroll::~PhoneVariableScroll()
 {
+    ioctl(_fd, UI_DEV_DESTROY);
+//    close(_fd);
     delete ui;
 }
 
@@ -95,7 +98,7 @@ void PhoneVariableScroll::readAdbShell()
             if (packet.at(2) == "0145")
             {
                 bool(packet.at(3).toInt()) ?
-                _wheelTimer->start() :
+                _wheelTimer->start(1000) :
                 _wheelTimer->stop();
 
             }
@@ -122,7 +125,6 @@ void PhoneVariableScroll::readAdbShell()
                         -1 * (_screenDivisionsHalf + index): 0;
 
                 updateWheelIndex(index);
-                db index;
 //                db fingerY;
             }
         }
@@ -132,7 +134,8 @@ void PhoneVariableScroll::readAdbShell()
 
 void PhoneVariableScroll::wheelRun()
 {
-    _input->emulate_touchpad_scroll(wheelRepeat.direction * 100);
+    emit_uinput(_fd, EV_REL, REL_WHEEL, wheelRepeat.direction);
+    emit_uinput(_fd, EV_SYN, SYN_REPORT, 0);
 }
 
 void PhoneVariableScroll::updateWheelIndex(int index)
@@ -141,9 +144,27 @@ void PhoneVariableScroll::updateWheelIndex(int index)
     index = abs(index);
     if(wheelRepeat.repeatMasterCounter != index)
     {
+        db index;
         wheelRepeat.repeatMasterCounter = index;
         wheelRepeat.repeat = index;
+        if(index == 0) return;
         wheelRun();
+        db "interval: " <<WHEEL_TICK_RATE*wheelRepeat.repeat;
+        _wheelTimer->setInterval(WHEEL_TICK_RATE*wheelRepeat.repeat);
     }
-    _wheelTimer->setInterval(WHEEL_TICK_RATE*wheelRepeat.repeat);
+//    _wheelTimer->setInterval(1000);
+}
+
+void PhoneVariableScroll::emit_uinput(int fd, int type, int code, int val)
+{
+    struct input_event ie;
+
+    ie.type = type;
+    ie.code = code;
+    ie.value = val;
+    /* timestamp values below are ignored */
+    ie.time.tv_sec = 0;
+    ie.time.tv_usec = 0;
+
+    write(fd, &ie, sizeof(ie));
 }

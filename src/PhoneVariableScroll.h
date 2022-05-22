@@ -8,9 +8,17 @@
 
 #include "debug.h"
 #include "CONFIG.h"
-#include <uInput.hpp>
 
-using namespace uInputPlus;
+#include <linux/uinput.h>
+#include <cstring>
+#include <thread>
+#include <fstream>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+
+
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -39,6 +47,8 @@ private slots:
     void readAdbShell();
     void wheelRun();
     void updateWheelIndex(int);
+
+    void emit_uinput(int fd, int type, int code, int val);
 private:
     Ui::PhoneVariableScroll *ui;
     QTimer * _wheelTimer;
@@ -50,6 +60,6 @@ private:
     // This is... this isn't right is it?
     const int _screenDivisionsHalf = SCREEN_DIVISIONS / 2;
     QList<float> _screenSpaces;
-    uInput * _input;
+    int _fd;
 };
 #endif // PHONEVARIABLESCROLL_H
