@@ -51,12 +51,12 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
     });
     getScreenSize->start("adb", QStringList() << "shell" << "wm" << "size");
 
-    QTimer * temp = new QTimer;
-    connect(temp, &QTimer::timeout, this, [=]()
-    {
-        _input->emulate_touchpad_scroll(-100);
-    });
-    temp->start(500);
+//    QTimer * temp = new QTimer;
+//    connect(temp, &QTimer::timeout, this, [=]()
+//    {
+//        _input->emulate_touchpad_scroll(-100);
+//    });
+//    temp->start(500);
 
 
 //    sleep(10);
@@ -98,7 +98,25 @@ void PhoneVariableScroll::readAdbShell()
             if (packet.at(2) == "0036")
             {
                 int fingerY = packet.at(3).toInt(nullptr, 16);
-                db fingerY;
+                int index = -1;
+                for(int i = 0; i < _screenSpaces.size(); ++i)
+                {
+                    if (fingerY <= _screenSpaces.at(i))
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index == -1)
+                    break;
+                index = _screenDivisionsHalf - index;
+
+                // Inverts index from center
+                index = index > 0 ?
+                        _screenDivisionsHalf - index : index < 0 ?
+                        -1 * (_screenDivisionsHalf + index): 0;
+                db index;
+//                db fingerY;
             }
         }
 
