@@ -5,5 +5,5 @@
 // Fastest wheel speed in ms
 #define WHEEL_TICK_RATE_MAX 200
 #define WHEEL_TICK_RATE_MIN 10
-#define WHEEL_NEUTRAL_ZONE_PX 200
+#define WHEEL_NEUTRAL_ZONE_PX 400
 #endif // CONFIG_H

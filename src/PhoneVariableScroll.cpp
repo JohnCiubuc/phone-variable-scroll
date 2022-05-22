@@ -22,7 +22,6 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
 PhoneVariableScroll::~PhoneVariableScroll()
 {
     ioctl(_fd, UI_DEV_DESTROY);
-//    close(_fd);
     delete ui;
 }
 
@@ -62,6 +61,14 @@ void PhoneVariableScroll::readAdbShell()
             {
                 int fingerY = packet.at(3).toInt(nullptr, 16);
                 int index = -1;
+                db fingerY;
+                // Neutral Zone
+                if (fingerY >= _neutralSize.x() && fingerY <= _neutralSize.y())
+                {
+                    db "Neutral";
+                    _wheelTimer->stop();
+                }
+                else _wheelTimer->stop();
                 for(int i = 0; i < _screenSpaces.size(); ++i)
                 {
                     if (fingerY <= _screenSpaces.at(i))
@@ -82,7 +89,6 @@ void PhoneVariableScroll::readAdbShell()
                 updateWheelIndex(index);
             }
         }
-
     }
 }
 
@@ -158,7 +164,16 @@ void PhoneVariableScroll::createScreenSize()
         else
             qw "Screen size requested from ADB was wrong. Command requested: adb shell wm size";
 
-        _screenSpaces = linspace(0,_screenSize.y(),SCREEN_DIVISIONS);
+        // Boundaries of neutral zone based on screen size
+        int low = _screenSize.y()/2 - WHEEL_NEUTRAL_ZONE_PX/2;
+        int high = low + WHEEL_NEUTRAL_ZONE_PX;
+
+        auto lowSpaces = linspace(0,low,SCREEN_DIVISIONS/2);
+        auto highSpaces = linspace(high, _screenSize.y(),SCREEN_DIVISIONS/2);
+
+        _screenSpaces = lowSpaces + highSpaces;
+        _neutralSize = QPoint(low,high);
+
         _wheelTickRates = linspace(WHEEL_TICK_RATE_MIN,WHEEL_TICK_RATE_MAX,SCREEN_DIVISIONS/2-1);
     });
     getScreenSize->start("adb", QStringList() << "shell" << "wm" << "size");

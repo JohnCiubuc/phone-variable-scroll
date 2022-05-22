@@ -56,6 +56,7 @@ private:
     QProcess * _adbProcessPipe;
     bool _bFingerActive = false;
     QPoint _screenSize;
+    QPoint _neutralSize;
 
 
     // This is... this isn't right is it?
