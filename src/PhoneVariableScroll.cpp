@@ -62,17 +62,6 @@ void PhoneVariableScroll::readAdbShell()
                 int fingerY = packet.at(3).toInt(nullptr, 16);
                 int index = -1;
 //                db fingerY;
-                // Neutral Zone
-//                if (fingerY >= _neutralSize.x() && fingerY <= _neutralSize.y())
-//                {
-////                    db "Neutral";
-//                    _wheelTimer->stop();
-//                }
-//                else
-//                {
-////                    db "LEFT NEUTRAL";
-//                    _wheelTimer->start();
-//                }
 
                 // Get screen space index
                 for(int i = 0; i < _screenSpaces.size(); ++i)
@@ -85,9 +74,12 @@ void PhoneVariableScroll::readAdbShell()
                 }
                 if (index == -1)
                     break;
+
                 index = _screenDivisionsHalf - index;
 
                 // Inverts index from center
+                // Larger numbers nearest to neutral zone
+                // Smallest numbers further from neutral zone
                 index = index > 0 ?
                         _screenDivisionsHalf - index : index < 0 ?
                         -1 * (_screenDivisionsHalf + index): 0;
@@ -107,14 +99,24 @@ void PhoneVariableScroll::wheelRun()
 
 void PhoneVariableScroll::updateWheelIndex(int index)
 {
+    // Set wheel direction
     wheelRepeat.direction = index > 0 ? 1:-1;
+
+    // Patch to prevent quick scroll down on neutral zone
+    if(index == 0) wheelRepeat.direction = 0;
+
+    // Remove direction so we just know the speed
     index = abs(index);
+
+    // If we are in a new section
     if(wheelRepeat.index != index)
     {
+        // If we're closer to the edges of the phone
+        // from the previous section, trigger a wheel
+        // to make it more instant feedback
         if(index < wheelRepeat.index)
             wheelRun();
 
-        db index;
         // We were previous in neutral zone
         // But now we are in scroll zone
         bool bExitNeutral = (wheelRepeat.index == 0);
@@ -123,15 +125,16 @@ void PhoneVariableScroll::updateWheelIndex(int index)
         wheelRepeat.index = index;
 
         // wheel neutral zone
+        // Stop timer
         if(index == 0)
         {
-            db "neutral zone "<<_wheelTimerInterval;
             _wheelTimer->stop();
             return;
         }
+        // Update intervals
         _wheelTimerInterval =_wheelTickRates.at(index-1);
-        db "winter"<<_wheelTimerInterval;
-        db bExitNeutral;
+
+        // Resume timer if we just exited neutral
         if(bExitNeutral) _wheelTimer->start();
     }
 }
@@ -173,6 +176,7 @@ void PhoneVariableScroll::createInput()
 void PhoneVariableScroll::createScreenSize()
 {
     QProcess * getScreenSize = new QProcess();
+    // converts adb output (example: 'Physical size: 1080x2160') into a QPoint
     connect(getScreenSize, &QProcess::readyRead, this, [=]()
     {
         auto line = getScreenSize->readAll().split(' ');
@@ -188,13 +192,18 @@ void PhoneVariableScroll::createScreenSize()
         int low = _screenSize.y()/2 - WHEEL_NEUTRAL_ZONE_PX/2;
         int high = low + WHEEL_NEUTRAL_ZONE_PX;
 
+        // Setup linspaces from below and above neutral zone
         auto lowSpaces = linspace(0,low,SCREEN_DIVISIONS/2);
         auto highSpaces = linspace(high, _screenSize.y(),SCREEN_DIVISIONS/2);
 
+        // Save linspaces.
+        // Neutral zone doesn't need to be saved,
+        // since it's out of the spaces
         _screenSpaces = lowSpaces + highSpaces;
-        _neutralSize = QPoint(low,high);
 
+        // Setup wheel tick speed based on linspace sections
         _wheelTickRates = linspace(WHEEL_TICK_RATE_MIN,WHEEL_TICK_RATE_MAX,SCREEN_DIVISIONS/2-1);
     });
+
     getScreenSize->start("adb", QStringList() << "shell" << "wm" << "size");
 }
