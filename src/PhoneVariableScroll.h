@@ -23,16 +23,20 @@ class PhoneVariableScroll : public QMainWindow
 public:
     PhoneVariableScroll(QWidget *parent = nullptr);
     ~PhoneVariableScroll();
-    std::vector<float> linspace(float start, float end, size_t points);
+    QList<float> linspace(float start, float end, int points);
 private slots:
 
     void readAdbShell();
-    void createScreenSpaces();
 private:
     Ui::PhoneVariableScroll *ui;
     QTimer * _wheelTimer;
     QProcess * _annoying;
     bool _bFingerActive = false;
     QPoint _screenSize;
+
+
+    // This is... this isn't right is it?
+    const int _screenDivisionsHalf = SCREEN_DIVISIONS / 2;
+    QList<float> _screenSpaces;
 };
 #endif // PHONEVARIABLESCROLL_H

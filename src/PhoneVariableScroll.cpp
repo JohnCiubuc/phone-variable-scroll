@@ -23,7 +23,7 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
         else
             qw "Screen size requested from ADB was wrong. Command requested: adb shell wm size";
 
-        createScreenSpaces();
+        _screenSpaces = linspace(0,_screenSize.y(),SCREEN_DIVISIONS);
     });
     getScreenSize->start("adb", QStringList() << "shell" << "wm" << "size");
 }
@@ -33,15 +33,13 @@ PhoneVariableScroll::~PhoneVariableScroll()
     delete ui;
 }
 
-std::vector<float> PhoneVariableScroll::linspace(float start, float end, size_t points)
+QList<float> PhoneVariableScroll::linspace(float start, float end, int points)
 {
-    std::vector<float> res(points);
+    QList<float> res;
     float step = (end - start) / (points - 1);
-    size_t i = 0;
-    for (auto& e : res)
-    {
-        e = start + step * i++;
-    }
+    int i = 0;
+    for (int x = 0; x < points; x++)
+        res << start + step * i++;
     return res;
 }
 
@@ -72,9 +70,3 @@ void PhoneVariableScroll::readAdbShell()
 
     }
 }
-
-void PhoneVariableScroll::createScreenSpaces()
-{
-
-}
-
