@@ -15,12 +15,20 @@ QT_BEGIN_NAMESPACE
 namespace Ui
 {
 class PhoneVariableScroll;
+
 }
 QT_END_NAMESPACE
 
 class PhoneVariableScroll : public QMainWindow
 {
     Q_OBJECT
+
+    struct wheelRepeat_s
+    {
+        int repeatMasterCounter;
+        int repeat;
+        int direction;
+    } wheelRepeat;
 
 public:
     PhoneVariableScroll(QWidget *parent = nullptr);
@@ -29,6 +37,8 @@ public:
 private slots:
 
     void readAdbShell();
+    void wheelRun();
+    void updateWheelIndex(int);
 private:
     Ui::PhoneVariableScroll *ui;
     QTimer * _wheelTimer;

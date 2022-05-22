@@ -60,6 +60,9 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
 
 
 //    sleep(10);
+    _wheelTimer = new QTimer(this);
+    connect(_wheelTimer, &QTimer::timeout, this, &PhoneVariableScroll::wheelRun);
+
 }
 
 PhoneVariableScroll::~PhoneVariableScroll()
@@ -91,8 +94,10 @@ void PhoneVariableScroll::readAdbShell()
             // Finger detection event
             if (packet.at(2) == "0145")
             {
-                _bFingerActive = bool(packet.at(3).toInt());
-                db _bFingerActive;
+                bool(packet.at(3).toInt()) ?
+                _wheelTimer->start() :
+                _wheelTimer->stop();
+
             }
             // Finger Y movement event
             if (packet.at(2) == "0036")
@@ -115,10 +120,30 @@ void PhoneVariableScroll::readAdbShell()
                 index = index > 0 ?
                         _screenDivisionsHalf - index : index < 0 ?
                         -1 * (_screenDivisionsHalf + index): 0;
+
+                updateWheelIndex(index);
                 db index;
 //                db fingerY;
             }
         }
 
     }
+}
+
+void PhoneVariableScroll::wheelRun()
+{
+    _input->emulate_touchpad_scroll(wheelRepeat.direction * 100);
+}
+
+void PhoneVariableScroll::updateWheelIndex(int index)
+{
+    wheelRepeat.direction = index > 0 ? 1:-1;
+    index = abs(index);
+    if(wheelRepeat.repeatMasterCounter != index)
+    {
+        wheelRepeat.repeatMasterCounter = index;
+        wheelRepeat.repeat = index;
+        wheelRun();
+    }
+    _wheelTimer->setInterval(WHEEL_TICK_RATE*wheelRepeat.repeat);
 }
