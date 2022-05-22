@@ -22,12 +22,14 @@ class PhoneVariableScroll : public QMainWindow
 public:
     PhoneVariableScroll(QWidget *parent = nullptr);
     ~PhoneVariableScroll();
-    std::vector<float> linspacer(float start, float end, size_t points);
+    std::vector<float> linspace(float start, float end, size_t points);
 private slots:
 
     void readAdbShell();
 private:
     Ui::PhoneVariableScroll *ui;
     QTimer * _wheelTimer;
+    QProcess * _annoying;
+    bool _bFingerActive = false;
 };
 #endif // PHONEVARIABLESCROLL_H
