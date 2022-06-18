@@ -103,6 +103,10 @@ void PhoneVariableScroll::updateWheelIndex(int index)
     // Set wheel direction
     wheelRepeat.direction = index > 0 ? 1:-1;
 
+    // Invert direction if true
+    if (_bInvertScrollDirection)
+        wheelRepeat.direction *= -1;
+
     // Patch to prevent quick scroll down on neutral zone
     if(index == 0) wheelRepeat.direction = 0;
 
@@ -208,3 +212,9 @@ void PhoneVariableScroll::createScreenSize()
 
     getScreenSize->start("adb", QStringList() << "shell" << "wm" << "size");
 }
+
+void PhoneVariableScroll::on_checkBox_clicked(bool checked)
+{
+    _bInvertScrollDirection = checked;
+}
+

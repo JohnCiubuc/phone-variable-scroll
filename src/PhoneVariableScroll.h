@@ -50,6 +50,8 @@ private slots:
     void updateWheelIndex(int);
 
     void emit_uinput(int fd, int type, int code, int val);
+    void on_checkBox_clicked(bool checked);
+
 private:
     void createInput();
     void createScreenSize();
@@ -68,5 +70,6 @@ private:
 
 
     int _wheelTimerInterval;
+    bool _bInvertScrollDirection = false;
 };
 #endif // PHONEVARIABLESCROLL_H
