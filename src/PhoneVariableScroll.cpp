@@ -248,13 +248,14 @@ void PhoneVariableScroll::createScreenSize()
 
 void PhoneVariableScroll::updateGUI()
 {
+    // Prevents dividing by 0 when
+    // too early or d/c'd
     if (_screenSize.y() == 0)
     {
         QTimer::singleShot(100, this, &PhoneVariableScroll::updateGUI);
         return;
     }
 
-// Offset is 47 px top and bottom
     QPixmap phone = QPixmap(":/images/resources/phone.png");
     ui->spinBox_Divisor->setValue(_phoneVariables.SCREEN_DIVISIONS);
     ui->spinBox_Deadzone->setValue(_phoneVariables.WHEEL_NEUTRAL_ZONE_PX);
@@ -270,7 +271,7 @@ void PhoneVariableScroll::updateGUI()
     //(0, -37.5, -75, -112.5, -150, 150, 112.5, 75, 37.5, 0)
     // Experimentally found in image editor (part of the phone image that's display)
     int bottom = 45;
-    int top = phone.height() - 47;
+    int top = 47;
 
 //    db  ratio;
     // Boundaries of neutral zone based on screen size
@@ -281,6 +282,10 @@ void PhoneVariableScroll::updateGUI()
     // Scale to image
     low *= ratio;
     high *= ratio;
+
+    // Offsets
+    low += bottom;
+    high -= top;
 
     // Setup linspaces from below and above neutral zone
 //    auto lowSpaces = linspace(0,low,_phoneVariables.SCREEN_DIVISIONS/2);
@@ -296,7 +301,13 @@ void PhoneVariableScroll::updateGUI()
     paint->drawRect(0,low,phone.width(),high-low);
     if (_fingerY != 0)
     {
-        paint->drawRect(phone.width()/2,_fingerY*ratio,25,25);
+        // Create 12px square around finger
+
+        int fatFinger = 12;
+        paint->drawRect(phone.width()/2 - fatFinger/2,
+                        _fingerY*ratio + fatFinger/2,
+                        fatFinger,
+                        fatFinger);
     }
     ui->label_Image->setPixmap(phone);
 }
