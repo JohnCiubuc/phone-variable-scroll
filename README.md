@@ -18,7 +18,8 @@ Qt/C++ and Python versions are provided, with the Qt/C++ being actively develope
 
 * Add window's functionality
 * ~Add GUI~
-   * Though doesn't do anything. But with it being C++, threads get deleted now
+   * ~Though doesn't do anything. But with it being C++, threads get deleted now~
+   * GUI works, just doesn't save settings for now
 * ~Easier scroll velocity changes~
 * ~Larger neutral zone with linspaces around it~
 * Binary
