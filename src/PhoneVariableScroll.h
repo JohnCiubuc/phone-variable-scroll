@@ -67,6 +67,10 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_spinBox_Divisor_valueChanged(int arg1);
+
+    void on_spinBox_Deadzone_valueChanged(int arg1);
+
 private:
     void createInput();
     void createScreenSize();
@@ -90,5 +94,6 @@ private:
 
     phoneVariables_s _phoneVariables;
     int _fingerY = 0;
+    QPoint _deadZone;
 };
 #endif // PHONEVARIABLESCROLL_H

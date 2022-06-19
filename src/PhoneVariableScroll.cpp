@@ -7,9 +7,11 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
 {
     ui->setupUi(this);
 
+
+    ui->spinBox_Divisor->setValue(_phoneVariables.SCREEN_DIVISIONS);
+    ui->spinBox_Deadzone->setValue(_phoneVariables.WHEEL_NEUTRAL_ZONE_PX);
+
     createInput();
-    createScreenSize();
-    updateGUI();
 
     _adbProcessPipe = new QProcess(this);
     connect(_adbProcessPipe, &QProcess::readyRead, this, &PhoneVariableScroll::readAdbShell);
@@ -44,6 +46,9 @@ void PhoneVariableScroll::readAdbShell()
     {
         _bStatusMessages = !_bStatusMessages;
         ui->statusbar->showMessage("ADB Bridge Connected");
+
+        createScreenSize();
+        updateGUI();
     }
     auto output = _adbProcessPipe->readAll();
     QList<QByteArray> events = output.split('\n');
@@ -173,6 +178,9 @@ void PhoneVariableScroll::generateLinspace()
     int low = _screenSize.y()/2 - _phoneVariables.WHEEL_NEUTRAL_ZONE_PX/2;
     int high = low + _phoneVariables.WHEEL_NEUTRAL_ZONE_PX;
 
+    // For drawing
+    _deadZone = QPoint(low,high);
+
     // Setup linspaces from below and above neutral zone
     auto lowSpaces = linspace(0,low,_phoneVariables.SCREEN_DIVISIONS/2);
     auto highSpaces = linspace(high, _screenSize.y(),_phoneVariables.SCREEN_DIVISIONS/2);
@@ -257,8 +265,6 @@ void PhoneVariableScroll::updateGUI()
     }
 
     QPixmap phone = QPixmap(":/images/resources/phone.png");
-    ui->spinBox_Divisor->setValue(_phoneVariables.SCREEN_DIVISIONS);
-    ui->spinBox_Deadzone->setValue(_phoneVariables.WHEEL_NEUTRAL_ZONE_PX);
     _screenDivisionsHalf = _phoneVariables.SCREEN_DIVISIONS / 2;
 
     generateLinspace();
@@ -270,44 +276,48 @@ void PhoneVariableScroll::updateGUI()
 
     //(0, -37.5, -75, -112.5, -150, 150, 112.5, 75, 37.5, 0)
     // Experimentally found in image editor (part of the phone image that's display)
-    int bottom = 45;
-    int top = 47;
+    int bottomMargin = 45;
+    int topMargin = 47;
+    int sideMargin = 10;
 
-//    db  ratio;
-    // Boundaries of neutral zone based on screen size
-    int low = _screenSize.y()/2 - _phoneVariables.WHEEL_NEUTRAL_ZONE_PX/2;
-    int high = low + _phoneVariables.WHEEL_NEUTRAL_ZONE_PX;
-
-
-    // Scale to image
-    low *= ratio;
-    high *= ratio;
+    QPoint deadZone = _deadZone * ratio;
+    // scale to image
+    int high = _deadZone.x() * ratio;
+    int low = _deadZone.y() * ratio;
 
     // Offsets
-    low += bottom;
-    high -= top;
+    low += bottomMargin;
+    high -= topMargin;
 
-    // Setup linspaces from below and above neutral zone
-//    auto lowSpaces = linspace(0,low,_phoneVariables.SCREEN_DIVISIONS/2);
-//    auto highSpaces = linspace(high, _screenSize.y(),_phoneVariables.SCREEN_DIVISIONS/2);
-
-//L top w heigh
-//    QPixmap *pix = new QPixmap(":/images/resources/phone.png");
+    db _deadZone;
+    db _deadZone * ratio;
+    db deadZone;
+//    db high;
 
     QPainter *paint = new QPainter(&phone);
     paint->setPen(*(new QColor(255,34,255,255)));
 //    paint->drawRect(0,bottom,phone.width(),top-bottom);
 
-    paint->drawRect(0,low,phone.width(),high-low);
+    paint->fillRect(sideMargin-1,deadZone.x(),phone.width()-sideMargin*2+2,deadZone.y()-deadZone.x(),QColor(255,34,255,255));
+
     if (_fingerY != 0)
     {
         // Create 12px square around finger
-
         int fatFinger = 12;
-        paint->drawRect(phone.width()/2 - fatFinger/2,
+        paint->fillRect(phone.width()/2 - fatFinger/2,
                         _fingerY*ratio + fatFinger/2,
                         fatFinger,
-                        fatFinger);
+                        fatFinger,
+                        Qt::darkGreen);
+    }
+    paint->setPen(*(new QColor(Qt::darkBlue)));
+    //(0, 232.5, 465,  697.5, 930, 1230, 1462.5, 1695, 1927.5, 2160)
+    for (auto screenSpace : _screenSpaces)
+    {
+        // Shrink to phone image size
+        screenSpace *= ratio;
+        paint->fillRect(sideMargin-1,screenSpace,phone.width()-sideMargin*2,2, Qt::darkBlue);
+
     }
     ui->label_Image->setPixmap(phone);
 }
@@ -323,5 +333,19 @@ void PhoneVariableScroll::on_pushButton_clicked()
     ui->statusbar->showMessage("Connecting to ADB Bridge...");
     _adbProcessPipe->start("adb", QStringList() << "shell" << "getevent");
     ui->pushButton->setEnabled(false);
+}
+
+
+void PhoneVariableScroll::on_spinBox_Divisor_valueChanged(int arg1)
+{
+    _phoneVariables.SCREEN_DIVISIONS = arg1;
+    updateGUI();
+}
+
+
+void PhoneVariableScroll::on_spinBox_Deadzone_valueChanged(int arg1)
+{
+    _phoneVariables.WHEEL_NEUTRAL_ZONE_PX = arg1;
+    updateGUI();
 }
 
