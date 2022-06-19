@@ -46,11 +46,14 @@ public:
 private slots:
 
     void readAdbShell();
+    void adbFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void wheelRun();
     void updateWheelIndex(int);
 
     void emit_uinput(int fd, int type, int code, int val);
     void on_checkBox_clicked(bool checked);
+
+    void on_pushButton_clicked();
 
 private:
     void createInput();
@@ -71,5 +74,6 @@ private:
 
     int _wheelTimerInterval;
     bool _bInvertScrollDirection = false;
+    bool _bStatusMessages = false;
 };
 #endif // PHONEVARIABLESCROLL_H

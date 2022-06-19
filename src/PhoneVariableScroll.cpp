@@ -12,11 +12,12 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
 
     _adbProcessPipe = new QProcess(this);
     connect(_adbProcessPipe, &QProcess::readyRead, this, &PhoneVariableScroll::readAdbShell);
+    connect(_adbProcessPipe, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &PhoneVariableScroll::adbFinished);
 
     _wheelTimer = new QTimer(this);
     connect(_wheelTimer, &QTimer::timeout, this, &PhoneVariableScroll::wheelRun);
 
-    _adbProcessPipe->start("adb", QStringList() << "shell" << "getevent");
+    on_pushButton_clicked();
 }
 
 PhoneVariableScroll::~PhoneVariableScroll()
@@ -25,18 +26,24 @@ PhoneVariableScroll::~PhoneVariableScroll()
     delete ui;
 }
 
+
 QList<float> PhoneVariableScroll::linspace(float start, float end, int points)
 {
     QList<float> res;
     float step = (end - start) / (points - 1);
     int i = 0;
-    for (int x = 0; x < points; x++)
+    while (i < points)
         res << start + step * i++;
+
     return res;
 }
-
 void PhoneVariableScroll::readAdbShell()
 {
+    if (!_bStatusMessages)
+    {
+        _bStatusMessages = !_bStatusMessages;
+        ui->statusbar->showMessage("ADB Bridge Connected");
+    }
     auto output = _adbProcessPipe->readAll();
     QList<QByteArray> events = output.split('\n');
     for (const auto &event : events)
@@ -89,6 +96,13 @@ void PhoneVariableScroll::readAdbShell()
             }
         }
     }
+}
+
+void PhoneVariableScroll::adbFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    ui->pushButton->setEnabled(true);
+    ui->statusbar->showMessage("ADB bridge offline");
+    _bStatusMessages = false;
 }
 
 void PhoneVariableScroll::wheelRun()
@@ -216,5 +230,13 @@ void PhoneVariableScroll::createScreenSize()
 void PhoneVariableScroll::on_checkBox_clicked(bool checked)
 {
     _bInvertScrollDirection = checked;
+}
+
+
+void PhoneVariableScroll::on_pushButton_clicked()
+{
+    ui->statusbar->showMessage("Connecting to ADB Bridge...");
+    _adbProcessPipe->start("adb", QStringList() << "shell" << "getevent");
+    ui->pushButton->setEnabled(false);
 }
 
