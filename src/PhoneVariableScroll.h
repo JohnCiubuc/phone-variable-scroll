@@ -58,6 +58,7 @@ private slots:
 private:
     void createInput();
     void createScreenSize();
+    void createGUI();
     Ui::PhoneVariableScroll *ui;
     QTimer * _wheelTimer;
     QProcess * _adbProcessPipe;

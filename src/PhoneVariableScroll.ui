@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>247</width>
-    <height>127</height>
+    <width>427</width>
+    <height>401</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,24 +15,73 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QCheckBox" name="checkBox">
-      <property name="text">
-       <string>Inverse Scroll (Phone Upside-down)</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="pushButton">
+    <item row="0" column="2" rowspan="2">
+     <widget class="QLabel" name="label_Image">
       <property name="minimumSize">
        <size>
-        <width>0</width>
-        <height>40</height>
+        <width>100</width>
+        <height>200</height>
        </size>
       </property>
       <property name="text">
-       <string>Reconnect to ADB </string>
+       <string/>
       </property>
+     </widget>
+    </item>
+    <item row="0" column="0" rowspan="2">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>GroupBox</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0" colspan="2">
+        <widget class="QCheckBox" name="checkBox">
+         <property name="text">
+          <string>Inverse Scroll</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Divisors #:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="spinBox_Divisor"/>
+       </item>
+       <item row="4" column="0" colspan="2">
+        <widget class="QPushButton" name="pushButton">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Reconnect to ADB </string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Deadzone:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="spinBox_Deadzone"/>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
@@ -42,7 +91,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>247</width>
+     <width>427</width>
      <height>23</height>
     </rect>
    </property>

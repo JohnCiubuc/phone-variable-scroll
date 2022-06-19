@@ -9,6 +9,7 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
 
     createInput();
     createScreenSize();
+    createGUI();
 
     _adbProcessPipe = new QProcess(this);
     connect(_adbProcessPipe, &QProcess::readyRead, this, &PhoneVariableScroll::readAdbShell);
@@ -225,6 +226,16 @@ void PhoneVariableScroll::createScreenSize()
     });
 
     getScreenSize->start("adb", QStringList() << "shell" << "wm" << "size");
+}
+
+void PhoneVariableScroll::createGUI()
+{
+    QPixmap *pix = new QPixmap(500,500);
+    QPainter *paint = new QPainter(pix);
+    paint->setPen(*(new QColor(255,34,255,255)));
+    paint->drawRect(15,15,100,100);
+    scene->addPixmap(*pix); // Moved this line
+    ui->label_Image->setPixmap(QPixmap(":/images/resources/phone.png"));
 }
 
 void PhoneVariableScroll::on_checkBox_clicked(bool checked)
