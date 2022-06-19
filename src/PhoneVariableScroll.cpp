@@ -360,13 +360,13 @@ void PhoneVariableScroll::on_spinBox_Deadzone_valueChanged(int arg1)
 void PhoneVariableScroll::on_spinBox_ScrollLow_valueChanged(int arg1)
 {
     _phoneVariables.WHEEL_TICK_RATE_MAX = arg1;
-    updateGUI();
+    generateLinspace();
 }
 
 
 void PhoneVariableScroll::on_spinBox_ScrollHigh_valueChanged(int arg1)
 {
     _phoneVariables.WHEEL_TICK_RATE_MIN = arg1;
-    updateGUI();
+    generateLinspace();
 }
 
