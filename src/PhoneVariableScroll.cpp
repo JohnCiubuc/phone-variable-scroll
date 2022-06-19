@@ -9,7 +9,7 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
 
     createInput();
     createScreenSize();
-    createGUI();
+    updateGUI();
 
     _adbProcessPipe = new QProcess(this);
     connect(_adbProcessPipe, &QProcess::readyRead, this, &PhoneVariableScroll::readAdbShell);
@@ -83,6 +83,14 @@ void PhoneVariableScroll::readAdbShell()
                 }
                 if (index == -1)
                     break;
+
+                // Draw on GUI
+                // Expensive, but fun
+                if (_fingerY != fingerY)
+                {
+                    _fingerY = fingerY;
+                    updateGUI();
+                }
 
                 index = _screenDivisionsHalf - index;
 
@@ -159,6 +167,26 @@ void PhoneVariableScroll::updateWheelIndex(int index)
     }
 }
 
+void PhoneVariableScroll::generateLinspace()
+{
+    // Boundaries of neutral zone based on screen size
+    int low = _screenSize.y()/2 - _phoneVariables.WHEEL_NEUTRAL_ZONE_PX/2;
+    int high = low + _phoneVariables.WHEEL_NEUTRAL_ZONE_PX;
+
+    // Setup linspaces from below and above neutral zone
+    auto lowSpaces = linspace(0,low,_phoneVariables.SCREEN_DIVISIONS/2);
+    auto highSpaces = linspace(high, _screenSize.y(),_phoneVariables.SCREEN_DIVISIONS/2);
+
+    // Save linspaces.
+    // Neutral zone doesn't need to be saved,
+    // since it's out of the spaces
+    _screenSpaces = lowSpaces + highSpaces;
+
+    // Setup wheel tick speed based on linspace sections
+    _wheelTickRates = linspace(_phoneVariables.WHEEL_TICK_RATE_MIN,_phoneVariables.WHEEL_TICK_RATE_MAX,_phoneVariables.SCREEN_DIVISIONS/2-1);
+
+}
+
 void PhoneVariableScroll::emit_uinput(int fd, int type, int code, int val)
 {
     struct input_event ie;
@@ -206,36 +234,71 @@ void PhoneVariableScroll::createScreenSize()
             _screenSize = QPoint(diff[0].toInt(), diff[1].toInt());
         }
         else
+        {
             qw "Screen size requested from ADB was wrong. Command requested: adb shell wm size";
+            return;
+        }
 
-        // Boundaries of neutral zone based on screen size
-        int low = _screenSize.y()/2 - WHEEL_NEUTRAL_ZONE_PX/2;
-        int high = low + WHEEL_NEUTRAL_ZONE_PX;
+//        generateLinspace();
 
-        // Setup linspaces from below and above neutral zone
-        auto lowSpaces = linspace(0,low,SCREEN_DIVISIONS/2);
-        auto highSpaces = linspace(high, _screenSize.y(),SCREEN_DIVISIONS/2);
-
-        // Save linspaces.
-        // Neutral zone doesn't need to be saved,
-        // since it's out of the spaces
-        _screenSpaces = lowSpaces + highSpaces;
-
-        // Setup wheel tick speed based on linspace sections
-        _wheelTickRates = linspace(WHEEL_TICK_RATE_MIN,WHEEL_TICK_RATE_MAX,SCREEN_DIVISIONS/2-1);
     });
 
     getScreenSize->start("adb", QStringList() << "shell" << "wm" << "size");
 }
 
-void PhoneVariableScroll::createGUI()
+void PhoneVariableScroll::updateGUI()
 {
-    QPixmap *pix = new QPixmap(500,500);
-    QPainter *paint = new QPainter(pix);
+    if (_screenSize.y() == 0)
+    {
+        QTimer::singleShot(100, this, &PhoneVariableScroll::updateGUI);
+        return;
+    }
+
+// Offset is 47 px top and bottom
+    QPixmap phone = QPixmap(":/images/resources/phone.png");
+    ui->spinBox_Divisor->setValue(_phoneVariables.SCREEN_DIVISIONS);
+    ui->spinBox_Deadzone->setValue(_phoneVariables.WHEEL_NEUTRAL_ZONE_PX);
+    _screenDivisionsHalf = _phoneVariables.SCREEN_DIVISIONS / 2;
+
+    generateLinspace();
+//    db _screenSpaces;
+
+    double ratio = static_cast<double>(phone.height()) / static_cast<double>(_screenSize.y());
+
+    // (0, 232.5, 465,  697.5, 930, 1230, 1462.5, 1695, 1927.5, 2160)
+
+    //(0, -37.5, -75, -112.5, -150, 150, 112.5, 75, 37.5, 0)
+    // Experimentally found in image editor (part of the phone image that's display)
+    int bottom = 45;
+    int top = phone.height() - 47;
+
+//    db  ratio;
+    // Boundaries of neutral zone based on screen size
+    int low = _screenSize.y()/2 - _phoneVariables.WHEEL_NEUTRAL_ZONE_PX/2;
+    int high = low + _phoneVariables.WHEEL_NEUTRAL_ZONE_PX;
+
+
+    // Scale to image
+    low *= ratio;
+    high *= ratio;
+
+    // Setup linspaces from below and above neutral zone
+//    auto lowSpaces = linspace(0,low,_phoneVariables.SCREEN_DIVISIONS/2);
+//    auto highSpaces = linspace(high, _screenSize.y(),_phoneVariables.SCREEN_DIVISIONS/2);
+
+//L top w heigh
+//    QPixmap *pix = new QPixmap(":/images/resources/phone.png");
+
+    QPainter *paint = new QPainter(&phone);
     paint->setPen(*(new QColor(255,34,255,255)));
-    paint->drawRect(15,15,100,100);
-    scene->addPixmap(*pix); // Moved this line
-    ui->label_Image->setPixmap(QPixmap(":/images/resources/phone.png"));
+//    paint->drawRect(0,bottom,phone.width(),top-bottom);
+
+    paint->drawRect(0,low,phone.width(),high-low);
+    if (_fingerY != 0)
+    {
+        paint->drawRect(phone.width()/2,_fingerY*ratio,25,25);
+    }
+    ui->label_Image->setPixmap(phone);
 }
 
 void PhoneVariableScroll::on_checkBox_clicked(bool checked)

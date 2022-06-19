@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <QPainter>
 
 #define DEBUG
 
@@ -28,6 +29,14 @@ class PhoneVariableScroll;
 
 }
 QT_END_NAMESPACE
+
+struct phoneVariables_s
+{
+    int SCREEN_DIVISIONS = 10;
+    int WHEEL_TICK_RATE_MIN = 20;
+    int WHEEL_TICK_RATE_MAX = 200;
+    int WHEEL_NEUTRAL_ZONE_PX = 300;
+} ;
 
 class PhoneVariableScroll : public QMainWindow
 {
@@ -45,10 +54,13 @@ public:
     QList<float> linspace(float start, float end, int points);
 private slots:
 
+    void updateGUI();
+    void generateLinspace();
     void readAdbShell();
     void adbFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void wheelRun();
     void updateWheelIndex(int);
+
 
     void emit_uinput(int fd, int type, int code, int val);
     void on_checkBox_clicked(bool checked);
@@ -58,7 +70,6 @@ private slots:
 private:
     void createInput();
     void createScreenSize();
-    void createGUI();
     Ui::PhoneVariableScroll *ui;
     QTimer * _wheelTimer;
     QProcess * _adbProcessPipe;
@@ -67,7 +78,7 @@ private:
 
 
     // This is... this isn't right is it?
-    const int _screenDivisionsHalf = SCREEN_DIVISIONS / 2;
+    int _screenDivisionsHalf;
     QList<float> _screenSpaces;
     QList<float> _wheelTickRates;
     int _fd;
@@ -76,5 +87,8 @@ private:
     int _wheelTimerInterval;
     bool _bInvertScrollDirection = false;
     bool _bStatusMessages = false;
+
+    phoneVariables_s _phoneVariables;
+    int _fingerY = 0;
 };
 #endif // PHONEVARIABLESCROLL_H
