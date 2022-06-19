@@ -18,7 +18,6 @@
 #define DEBUG
 
 #include "debug.h"
-#include "CONFIG.h"
 
 
 

@@ -327,6 +327,7 @@ void PhoneVariableScroll::updateGUI(bool bWithLinspace)
 
     }
     ui->label_Image->setPixmap(phone);
+    paint->end();
 }
 
 void PhoneVariableScroll::on_checkBox_clicked(bool checked)
