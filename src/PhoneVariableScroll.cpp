@@ -10,6 +10,8 @@ PhoneVariableScroll::PhoneVariableScroll(QWidget *parent)
 
     ui->spinBox_Divisor->setValue(_phoneVariables.SCREEN_DIVISIONS);
     ui->spinBox_Deadzone->setValue(_phoneVariables.WHEEL_NEUTRAL_ZONE_PX);
+    ui->spinBox_ScrollLow->setValue(_phoneVariables.WHEEL_TICK_RATE_MAX);
+    ui->spinBox_ScrollHigh->setValue(_phoneVariables.WHEEL_TICK_RATE_MIN);
 
     createInput();
 
@@ -120,7 +122,6 @@ void PhoneVariableScroll::adbFinished(int exitCode, QProcess::ExitStatus exitSta
 
 void PhoneVariableScroll::wheelRun()
 {
-    db "wheelRun - " << _wheelTimerInterval;
     _wheelTimer->setInterval(_wheelTimerInterval);
     emit_uinput(_fd, EV_REL, REL_WHEEL, wheelRepeat.direction);
     emit_uinput(_fd, EV_SYN, SYN_REPORT, 0);
@@ -128,7 +129,6 @@ void PhoneVariableScroll::wheelRun()
 
 void PhoneVariableScroll::updateWheelIndex(int index)
 {
-    db "index - " << index;
     // Set wheel direction
     wheelRepeat.direction = index > 0 ? 1:-1;
 
@@ -275,6 +275,9 @@ void PhoneVariableScroll::updateGUI(bool bWithLinspace)
 
     double ratio = static_cast<double>(phone.height()) / static_cast<double>(_screenSize.y());
 
+//    db ratio;
+//    db phone.height();
+//    db _screenSize;
     // (0, 232.5, 465,  697.5, 930, 1230, 1462.5, 1695, 1927.5, 2160)
 
     //(0, -37.5, -75, -112.5, -150, 150, 112.5, 75, 37.5, 0)
@@ -284,36 +287,42 @@ void PhoneVariableScroll::updateGUI(bool bWithLinspace)
     int sideMargin = 10;
 
     QPoint deadZone = _deadZone * ratio;
-    // scale to image
-    int high = _deadZone.x() * ratio;
-    int low = _deadZone.y() * ratio;
-
-    // Offsets
-    low += bottomMargin;
-    high -= topMargin;
 
     QPainter *paint = new QPainter(&phone);
-    paint->setPen(*(new QColor(255,34,255,255)));
-//    paint->drawRect(0,bottom,phone.width(),top-bottom);
-
     paint->fillRect(sideMargin-1,deadZone.x(),phone.width()-sideMargin*2+2,deadZone.y()-deadZone.x(),QColor(255,34,255,255));
 
     if (_fingerY != 0)
     {
+        auto rawLoc = _fingerY*ratio;
+        rawLoc *= (400-45-47);
+        double fingerY = rawLoc / 400;
+        fingerY += bottomMargin;
+        db fingerY;
         // Create 12px square around finger
         int fatFinger = 12;
+        fingerY -= fatFinger/2;
         paint->fillRect(phone.width()/2 - fatFinger/2,
-                        _fingerY*ratio + fatFinger/2,
+                        fingerY,
                         fatFinger,
                         fatFinger,
                         Qt::darkGreen);
     }
     paint->setPen(*(new QColor(Qt::darkBlue)));
     //(0, 232.5, 465,  697.5, 930, 1230, 1462.5, 1695, 1927.5, 2160)
-    for (auto screenSpace : _screenSpaces)
+    // Need to make new screenspace for image
+    // Setup linspaces from below and above neutral zone
+    auto lowSpaces = linspace(bottomMargin,deadZone.x(),_screenDivisionsHalf);
+    auto highSpaces = linspace(deadZone.y(), phone.height()-topMargin,_screenDivisionsHalf);
+
+    // Save linspaces.
+    // Neutral zone doesn't need to be saved,
+    // since it's out of the spaces
+    auto screenSpaces = lowSpaces + highSpaces;
+    for (auto screenSpace : screenSpaces)
     {
         // Shrink to phone image size
-        screenSpace *= ratio;
+//        screenSpace *= ratio;
+//        db screenSpace;
         paint->fillRect(sideMargin-1,screenSpace,phone.width()-sideMargin*2,2, Qt::darkBlue);
 
     }
@@ -344,6 +353,20 @@ void PhoneVariableScroll::on_spinBox_Divisor_valueChanged(int arg1)
 void PhoneVariableScroll::on_spinBox_Deadzone_valueChanged(int arg1)
 {
     _phoneVariables.WHEEL_NEUTRAL_ZONE_PX = arg1;
+    updateGUI();
+}
+
+
+void PhoneVariableScroll::on_spinBox_ScrollLow_valueChanged(int arg1)
+{
+    _phoneVariables.WHEEL_TICK_RATE_MAX = arg1;
+    updateGUI();
+}
+
+
+void PhoneVariableScroll::on_spinBox_ScrollHigh_valueChanged(int arg1)
+{
+    _phoneVariables.WHEEL_TICK_RATE_MIN = arg1;
     updateGUI();
 }
 

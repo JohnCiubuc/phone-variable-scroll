@@ -71,6 +71,10 @@ private slots:
 
     void on_spinBox_Deadzone_valueChanged(int arg1);
 
+    void on_spinBox_ScrollLow_valueChanged(int arg1);
+
+    void on_spinBox_ScrollHigh_valueChanged(int arg1);
+
 private:
     void createInput();
     void createScreenSize();
