@@ -75,7 +75,6 @@ void PhoneVariableScroll::readAdbShell()
             {
                 int fingerY = packet.at(3).toInt(nullptr, 16);
                 int index = -1;
-                db fingerY;
 
                 // Get screen space index
                 for(int i = 0; i < _screenSpaces.size(); ++i)
@@ -94,7 +93,7 @@ void PhoneVariableScroll::readAdbShell()
                 if (_fingerY != fingerY)
                 {
                     _fingerY = fingerY;
-                    updateGUI();
+                    updateGUI(false);
                 }
 
                 index = _screenDivisionsHalf - index;
@@ -121,6 +120,7 @@ void PhoneVariableScroll::adbFinished(int exitCode, QProcess::ExitStatus exitSta
 
 void PhoneVariableScroll::wheelRun()
 {
+    db "wheelRun - " << _wheelTimerInterval;
     _wheelTimer->setInterval(_wheelTimerInterval);
     emit_uinput(_fd, EV_REL, REL_WHEEL, wheelRepeat.direction);
     emit_uinput(_fd, EV_SYN, SYN_REPORT, 0);
@@ -128,6 +128,7 @@ void PhoneVariableScroll::wheelRun()
 
 void PhoneVariableScroll::updateWheelIndex(int index)
 {
+    db "index - " << index;
     // Set wheel direction
     wheelRepeat.direction = index > 0 ? 1:-1;
 
@@ -190,6 +191,7 @@ void PhoneVariableScroll::generateLinspace()
     // since it's out of the spaces
     _screenSpaces = lowSpaces + highSpaces;
 
+    _screenDivisionsHalf = _phoneVariables.SCREEN_DIVISIONS / 2;
     // Setup wheel tick speed based on linspace sections
     _wheelTickRates = linspace(_phoneVariables.WHEEL_TICK_RATE_MIN,_phoneVariables.WHEEL_TICK_RATE_MAX,_phoneVariables.SCREEN_DIVISIONS/2-1);
 
@@ -247,6 +249,7 @@ void PhoneVariableScroll::createScreenSize()
             return;
         }
 
+        updateGUI();
 //        generateLinspace();
 
     });
@@ -254,20 +257,20 @@ void PhoneVariableScroll::createScreenSize()
     getScreenSize->start("adb", QStringList() << "shell" << "wm" << "size");
 }
 
-void PhoneVariableScroll::updateGUI()
+void PhoneVariableScroll::updateGUI(bool bWithLinspace)
 {
     // Prevents dividing by 0 when
     // too early or d/c'd
     if (_screenSize.y() == 0)
     {
-        QTimer::singleShot(100, this, &PhoneVariableScroll::updateGUI);
+//        QTimer::singleShot(100, this, &PhoneVariableScroll::updateGUI);
         return;
     }
 
+    // Load pixmap
     QPixmap phone = QPixmap(":/images/resources/phone.png");
-    _screenDivisionsHalf = _phoneVariables.SCREEN_DIVISIONS / 2;
-
-    generateLinspace();
+    if(bWithLinspace)
+        generateLinspace();
 //    db _screenSpaces;
 
     double ratio = static_cast<double>(phone.height()) / static_cast<double>(_screenSize.y());
@@ -288,11 +291,6 @@ void PhoneVariableScroll::updateGUI()
     // Offsets
     low += bottomMargin;
     high -= topMargin;
-
-    db _deadZone;
-    db _deadZone * ratio;
-    db deadZone;
-//    db high;
 
     QPainter *paint = new QPainter(&phone);
     paint->setPen(*(new QColor(255,34,255,255)));

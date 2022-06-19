@@ -54,7 +54,7 @@ public:
     QList<float> linspace(float start, float end, int points);
 private slots:
 
-    void updateGUI();
+    void updateGUI(bool bWithLinspace = true);
     void generateLinspace();
     void readAdbShell();
     void adbFinished(int exitCode, QProcess::ExitStatus exitStatus);
