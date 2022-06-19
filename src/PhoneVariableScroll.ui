@@ -18,7 +18,7 @@
     <item row="0" column="0" rowspan="2">
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
-       <string>GroupBox</string>
+       <string>Options</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="4" column="1">
@@ -141,6 +141,14 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <tabstops>
+  <tabstop>checkBox</tabstop>
+  <tabstop>spinBox_Divisor</tabstop>
+  <tabstop>spinBox_Deadzone</tabstop>
+  <tabstop>spinBox_ScrollLow</tabstop>
+  <tabstop>spinBox_ScrollHigh</tabstop>
+  <tabstop>pushButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

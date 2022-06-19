@@ -14,7 +14,6 @@ SOURCES += \
 
 HEADERS += \
     JohnQtDebugUtils/debug.h \
-    src/CONFIG.h \
     src/PhoneVariableScroll.h
 
 FORMS += \
